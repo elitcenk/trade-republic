@@ -4,6 +4,9 @@ import InstrumentEvent
 import dao.InstrumentDao
 
 
+/**
+ * Service operation of Instrument
+ */
 class InstrumentService(dao: InstrumentDao) {
 
     private var dao: InstrumentDao? = dao

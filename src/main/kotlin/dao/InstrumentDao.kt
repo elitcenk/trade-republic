@@ -6,7 +6,9 @@ import com.mongodb.BasicDBObject
 import com.mongodb.client.MongoDatabase
 import org.bson.Document
 
-
+/**
+ * Instrument repository operations
+ */
 class InstrumentDao(database: MongoDatabase) {
 
     private var database: MongoDatabase? = database

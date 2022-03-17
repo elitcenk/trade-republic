@@ -5,6 +5,9 @@ import CandlestickManager
 import QuoteEvent
 import dao.QuoteDao
 
+/**
+ * Quote operation of Quote
+ */
 class QuoteService(dao: QuoteDao) : CandlestickManager{
 
     private var dao: QuoteDao? = dao

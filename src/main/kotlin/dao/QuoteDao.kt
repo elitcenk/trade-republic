@@ -10,7 +10,9 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-
+/**
+ * Quote repository operations
+ */
 class QuoteDao(database: MongoDatabase) {
 
     private var database: MongoDatabase? = database
