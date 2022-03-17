@@ -16,6 +16,9 @@ class QuoteDao(database: MongoDatabase) {
     private var database: MongoDatabase? = database
     private val formatter = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss z uuuu").withZone(ZoneId.systemDefault())
 
+    /**
+     * Save ISIN price to the mongodb candleStick collection with time
+     */
     fun save(isin: String, price: Double) {
         val collection = database!!.getCollection("candleStick")
         val document = Document()
@@ -25,6 +28,9 @@ class QuoteDao(database: MongoDatabase) {
         collection.insertOne(document)
     }
 
+    /**
+     * Find Quote by ISIN
+     */
     fun findByIsin(isin: String): MutableList<Quote> {
         val collectionCandle = database!!.getCollection("candleStick")
         val searchQuery = BasicDBObject()
@@ -37,6 +43,9 @@ class QuoteDao(database: MongoDatabase) {
     }
 
 
+    /**
+     * Find Candlestick from mongodb. Candlestick created with group of time.
+     */
     fun findByIsinGroupByMinute(isin: String, minute: Long): List<Candlestick> {
         val collection = database!!.getCollection("candleStick")
         val result = collection.aggregate(
@@ -48,6 +57,9 @@ class QuoteDao(database: MongoDatabase) {
         return candlesticks
     }
 
+    /**
+     * Mongodb document map to the candlestick
+     */
     private fun createCandlestick(document: Document): Candlestick {
         val openTimestampInstant = Instant.from(formatter.parse(document["openTimestamp"].toString()))
         val closeTimestampInstant = Instant.from(formatter.parse(document["closeTimestamp"].toString()))
@@ -61,12 +73,19 @@ class QuoteDao(database: MongoDatabase) {
         )
     }
 
-    private fun createGroupQuery(isin: String, minute: Long) = listOf(
-        Document(
+    /**
+     * Create mongo aggregation query. This query contains 4 operations
+     * matchOperation -> Match with ISIN
+     * groupOperation -> Matched element grouped into period and computer additional value such as low price
+     * projectionOperation -> Grouped elements project to the candlestick fields.
+     * sortOperation -> Projected element sorted by openTimestamp with this operation.
+     */
+    private fun createGroupQuery(isin: String, minute: Long): List<Document> {
+        val matchOperation = Document(
             "\$match",
             Document("isin", isin)
-        ),
-        Document(
+        )
+        val groupOperation = Document(
             "\$group",
             Document(
                 "_id",
@@ -96,8 +115,8 @@ class QuoteDao(database: MongoDatabase) {
                     "closePrice",
                     Document("\$last", "\$price")
                 )
-        ),
-        Document(
+        )
+        val projectionOperation = Document(
             "\$project",
             Document("_id", 0L)
                 .append("openTimestamp", "\$_id.openTimestamp")
@@ -114,10 +133,16 @@ class QuoteDao(database: MongoDatabase) {
                             .append("amount", minute)
                     )
                 )
-        ),
-        Document(
+        )
+        val sortOperation = Document(
             "\$sort",
             Document("openTimestamp", 1L)
         )
-    )
+        return listOf(
+            matchOperation,
+            groupOperation,
+            projectionOperation,
+            sortOperation
+        )
+    }
 }

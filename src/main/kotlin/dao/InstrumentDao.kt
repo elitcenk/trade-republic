@@ -11,6 +11,9 @@ class InstrumentDao(database: MongoDatabase) {
 
     private var database: MongoDatabase? = database
 
+    /**
+     * Save Instrument in mongodb instrument collection
+     */
     fun save(isin: String, desc: String) {
         val collection = database!!.getCollection("instrument")
         val document = Document()
@@ -20,6 +23,9 @@ class InstrumentDao(database: MongoDatabase) {
     }
 
 
+    /**
+     * Delete instrument by ISIN from mongodb
+     */
     fun delete(isin: String) {
         val collectionInstrument = database!!.getCollection("instrument")
         val collectionCandle = database!!.getCollection("candleStick")
@@ -29,6 +35,9 @@ class InstrumentDao(database: MongoDatabase) {
         collectionCandle.deleteMany(searchQuery)
     }
 
+    /**
+     * Find Instrument list by ISIN from mongodb
+     */
     fun findByIsin(isin: String): MutableList<Instrument> {
         val collectionInstrument = database!!.getCollection("instrument")
         val searchQuery = BasicDBObject()
